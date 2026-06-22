@@ -1,0 +1,512 @@
+theme_minimal() +
+labs(
+  title="Pollinator Distribution Relative to Forest Cover and Protected Areas",
+  subtitle="Java-Bali"
+)
+library(ggplot2)
+p_pa <- ggplot() +
+  geom_sf(
+    data = pa_java,
+    fill = NA,
+    linewidth = 0.8
+  ) +
+  geom_sf(
+    data = poll_plot,
+    aes(color = protected),
+    size = 0.8,
+    alpha = 0.6
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Pollinator Records Inside and Outside Protected Areas",
+    subtitle = "Java-Bali",
+    color = "Status"
+  )
+p_pa
+p_rich <- ggplot(
+  forest_pa_summary,
+  aes(
+    x = protected,
+    y = richness
+  )
+) +
+  geom_col() +
+  theme_minimal() +
+  labs(
+    title = "Pollinator Richness in Forests Inside vs Outside Protected Areas",
+    x = "Protected Area Status",
+    y = "Observed Taxon Richness"
+  )
+p_rich
+ggplot() +
+geom_raster(
+  data = tree_df_small,
+  aes(
+    x=x,
+    y=y,
+    fill=treecover
+  )
+) +
+geom_sf(
+  data = pa_java,
+  fill = NA,
+  linewidth = 0.7
+) +
+geom_sf(
+  data = poll_plot,
+  aes(
+    color=protected
+  ),
+  size=0.5,
+  alpha=0.7
+) +
+scale_fill_viridis_c(
+  name="Tree cover (%)"
+) +
+theme_minimal() +
+labs(
+  title="Pollinator Distribution Relative to Forest Cover and Protected Areas",
+  subtitle="Java-Bali"
+)
+ggsave("Pollinator distribution forest cover and PA.png", width = 10, height = 8, dpi = 300)
+final_summary <- data.frame(metric = c("Forest cover 2000 (ha)", "Forest loss 2001-2024 (ha)", "Forest loss (%), "Pollinator taxa in remaining forest", "Pollinator taxa in forest loss areas", "Protected forest taxa", "Non-protected forest taxa"
+final_summary <- data.frame(
+  metric = c(
+    "Forest cover 2000 (ha)",
+    "Forest loss 2001-2024 (ha)",
+    "Forest loss (%)",
+    "Pollinator taxa in remaining forest",
+    "Pollinator taxa in forest loss areas",
+    "Protected forest taxa",
+    "Non-protected forest taxa"
+  ),
+  value = c(
+    forest_area_ha$sum,
+    total_loss,
+    loss_percent$sum,
+    221,
+    34,
+    45,
+    138
+  )
+)
+final_summary
+final_summary_clean <- final_summary %>%
+mutate(value = round(value, 2)
+)
+final_summary_clean
+install.packages("vegan")
+library(vegan)
+forest_pa <- poll_pa %>%
+filter(forest_class == "Forest") %>%
+st_drop_geometry()
+table(forest_pa$protected)
+comm <- table(forest_pa$gbifID, forest_pa$taxon
+)
+comm <- as.matrix(comm)
+dim(comm)
+sample_group <- forest_pa$protected
+names(sample_group) <- forest_pa$gbifID
+min_n <- min(table(sample_group)
+)
+min_n
+rare_results <- data.frame(group = character(), richness = numeric()
+)
+for(g in unique(sample_group)){
+sub <- comm[names(sample_group[sample_group[sample_group==g]), ]
+> rare_results <- data.frame(group = character(), richness = numeric()
++ )
+> for(g in unique(sample_group)){
++ sub <- comm[names(sample_group[sample_group[sample_group==g]),]
+rare_results <- data.frame(
+  group = character(),
+  richness = numeric()
+)
+for(g in unique(sample_group)){
+  sub <- comm[names(sample_group[sample_group==g]), ]
+  rare <- rarefy(
+    sub,
+    sample = min_n
+  )
+  rare_results <- rbind(
+    rare_results,
+    data.frame(
+      group=g,
+      richness=sum(rare)
+    )
+  )
+}
+rare_results
+forest_pa <- poll_pa %>%
+filter(forest_class == "Forest") %>%
+st_drop_geometry()
+comm_group <- forest_pa %>%
+  count(protected, taxon) %>%
+  tidyr::pivot_wider(
+    names_from = taxon,
+    values_from = n,
+    values_fill = 0
+  )
+comm_group
+forest_pa_clean <- forest_pa %>%
+  filter(
+    !is.na(taxon),
+    taxon != ""
+  )
+sum(is.na(forest_pa_clean$taxon))
+sum(forest_pa_clean$taxon == "")
+comm_group <- forest_pa_clean %>%
+  count(protected, taxon) %>%
+  tidyr::pivot_wider(
+    names_from = taxon,
+    values_from = n,
+    values_fill = 0
+  )
+comm_group
+outside <- comm_group %>%
+  filter(protected == "Outside Protected Area") %>%
+  select(-protected)
+protected <- comm_group %>%
+  filter(protected == "Protected Area") %>%
+  select(-protected)
+outside <- as.numeric(outside)
+protected <- as.numeric(protected)
+library(vegan)
+rare_outside <- rarefy(
+  outside,
+  sample = 163
+)
+rare_protected <- rarefy(
+  protected,
+  sample = 163
+)
+rare_outside
+rare_protected
+pa_richness <- poll_pa %>%
+filter(protected == "Protected Area"
+) %>%
+st_drop_geometry() %>%
+group_by(NAME) %>%
+summarise(records = n(), richness = n_distinct(taxon)
+) %>%
+arrange(desc(richness))
+pa_richness
+head(pa_richness, 10)
+library(ggplot2)
+top_pa <- head(pa_richness, 10)
+ggplot(top_pa, aes(x=reorder(NAME, richness), y=richness
+)
+) +
+geom_col() + coord_flip() + theme_minimal() + labs(title = "Protected Areas with Highest Pollinator Richness", x = "Protected Area", y = "Observed Taxon Richness"
+)
+ggsave(
+ "Top protected areas pollinator richness.png",
+ width=8,
+ height=6,
+ dpi=300
+)
+forest_pa_richness <- poll_pa %>%
+  filter(
+    protected=="Protected Area",
+    forest_class=="Forest"
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(NAME) %>%
+  summarise(
+    records=n(),
+    richness=n_distinct(taxon)
+  ) %>%
+  arrange(desc(richness))
+head(forest_pa_richness, 10)
+head(forest_pa_richness, 10)
+top_forest_pa <- head(forest_pa_richness, 10)
+ggplot(
+  top_forest_pa,
+  aes(
+    x = reorder(NAME, richness),
+    y = richness
+  )
+) +
+geom_col() +
+coord_flip() +
+theme_minimal() +
+labs(
+  title="Top Protected Forests by Pollinator Richness",
+  x="Protected forest",
+  y="Observed taxa"
+)
+ggsave(
+ "Top protected areas pollinator richness.png",
+ width=8,
+ height=6,
+ dpi=300
+)
+ggsave("Top protected forests by pollinator richness.png", width=8, height=6, dpi=300)
+write.csv(
+  forest_pa_richness,
+  "Protected area pollinator richness.csv",
+  row.names = FALSE
+)
+halimun_taxa <- poll_pa %>%
+  filter(
+    NAME == "Gunung Halimun - Salak",
+    protected == "Protected Area"
+  ) %>%
+  st_drop_geometry() %>%
+  select(taxon)
+halimun_taxa
+taxon_pa_frequency <- poll_pa %>%
+filter(protected == "Protected Area",
+!is.na(NAME), !is.na(taxon)
+) %>%
+st_drop_geometry() %>%
+group_by(taxon) %>%
+summarise(protected_areas = n_distinct(NAME)
+) %>%
+arrange(protected areas)
+taxon_pa_frequency <- poll_pa %>%
+  filter(
+    protected == "Protected Area",
+    !is.na(NAME),
+    !is.na(taxon)
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(taxon) %>%
+  summarise(
+    protected_areas = n_distinct(NAME)
+  ) %>%
+  arrange(protected_areas)
+halimun_unique <- taxon_pa_frequency %>%
+  filter(
+    taxon %in% halimun_taxa$taxon
+  )
+halimun_unique
+halimun_only <- halimun_unique %>%
+  filter(
+    protected_areas == 1
+  )
+halimun_only
+site_uniqueness <- poll_pa %>%
+  filter(
+    protected=="Protected Area",
+    !is.na(NAME),
+    !is.na(taxon)
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(NAME) %>%
+  summarise(
+    records=n(),
+    richness=n_distinct(taxon),
+    taxa_per_record=richness/records
+  ) %>%
+  arrange(desc(taxa_per_record))
+head(site_uniqueness,10)
+pa_taxa <- poll_pa %>%
+  filter(
+    protected=="Protected Area",
+    !is.na(NAME),
+    !is.na(taxon)
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(NAME) %>%
+  summarise(
+    taxa = list(unique(taxon))
+  )
+pa_taxa
+print(pa_taxa, n = 37)
+pa_unique <- poll_pa %>%
+  filter(
+    protected == "Protected Area",
+    !is.na(NAME),
+    !is.na(taxon)
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(NAME) %>%
+  summarise(
+    records = n(),
+    richness = n_distinct(taxon)
+  ) %>%
+  arrange(desc(richness))
+pa_unique
+taxon_occurrence <- poll_pa %>%
+  filter(
+    protected=="Protected Area",
+    !is.na(NAME),
+    !is.na(taxon)
+  ) %>%
+  st_drop_geometry() %>%
+  group_by(taxon) %>%
+  summarise(
+    n_PA = n_distinct(NAME)
+  )
+rare_taxa <- taxon_occurrence %>%
+  filter(n_PA == 1)
+rare_taxa
+unique_PA_taxa <- poll_pa %>%
+  filter(
+    protected=="Protected Area",
+    taxon %in% rare_taxa$taxon
+  ) %>%
+  st_drop_geometry() %>%
+  select(NAME, taxon) %>%
+  distinct()
+unique_PA_taxa
+unique_PA_taxa <- unique_PA_taxa %>%
+  filter(
+    !is.na(taxon),
+    taxon != ""
+  )
+write.csv(
+  unique_PA_taxa,
+  "Unique pollinator taxa by protected area.csv",
+  row.names = FALSE
+)
+unique_PA_count <- unique_PA_taxa %>%
+  group_by(NAME) %>%
+  summarise(
+    unique_taxa = n()
+  ) %>%
+  arrange(desc(unique_taxa))
+unique_PA_count
+library(ggplot2)
+ggplot(
+  unique_PA_count,
+  aes(
+    x = reorder(NAME, unique_taxa),
+    y = unique_taxa
+  )
+) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title="Protected Areas Containing Unique Pollinator Taxa",
+    x="Protected Area",
+    y="Number of unique taxa"
+  )
+ggsave(
+  "Unique pollinator taxa protected areas.png",
+  width=8,
+  height=6,
+  dpi=300
+)
+write.csv(
+  pa_unique,
+  "Protected area richness table.csv",
+  row.names = FALSE
+)
+write.csv(
+  forest_pa_richness,
+  "Forest protected area richness.csv",
+  row.names = FALSE
+)
+library(dplyr)
+grid_model <- grid_sf %>%
+left_join(richness_grid, by="id"
+)
+head(grid_model)
+tree_grid <- as.data.frame(tree_small, xy=TRUE)
+head(tree_grid)
+grid_tree <- st_join(grid_model, st_as_sf(tree_grid, coords=c("x","y")), join=st_contains)
+grid_tree <- st_join(
+  grid_model,
+  st_as_sf(tree_grid, coords=c("x","y")),
+  join=st_contains
+)
+st_crs(grid_model)
+st_crs(pa_java)
+grid_model <- st_transform(
+  grid_model,
+  4326
+)
+pa_java <- st_transform(
+  pa_java,
+  4326
+)
+tree_sf <- st_as_sf(
+  tree_grid,
+  coords = c("x","y"),
+  crs = 4326
+)
+st_crs(tree_sf)
+grid_tree <- st_join(
+  grid_model,
+  tree_sf,
+  join = st_contains
+)
+grid_pa <- st_join(
+  grid_tree,
+  pa_java["NAME"],
+  left=TRUE
+)
+grid_pa <- grid_pa %>%
+  mutate(
+    protected =
+      ifelse(
+        is.na(NAME),
+        "Outside",
+        "Protected"
+      )
+  )
+model_data <- grid_pa %>%
+  st_drop_geometry() %>%
+  filter(
+    !is.na(richness),
+    !is.na(treecover2000)
+  )
+glm1 <- glm(
+  richness ~ treecover2000 + protected,
+  data=model_data,
+  family=poisson
+)
+summary(glm1)
+library(AER)
+install.packages(AER)
+install.packages("AER")
+library(AER)
+dispersiontest(glm1)
+library(MASS)
+glm_nb <- glm.nb(
+  richness ~ treecover2000 + protected,
+  data = model_data
+)
+summary(glm_nb)
+exp(coef(glm_nb))
+confint(glm_nb)
+exp(confint(glm_nb))
+coef_df <- data.frame(
+  variable = c("Tree cover", "Protected area"),
+  estimate = c(0.994, 1.234),
+  lower = c(0.9932138, 1.1701632),
+  upper = c(0.9950081, 1.3009660)
+)
+library(ggplot2)
+ggplot(coef_df,
+       aes(x = variable,
+           y = estimate)) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = lower,
+        ymax = upper),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 1,
+             linetype = "dashed") +
+  theme_minimal() +
+  labs(
+    y = "Effect size (Incidence Rate Ratio)",
+    x = "",
+    title = "Effects of Forest Cover and Protection on Pollinator Richness"
+  )
+ggsave("Effectcs of forest cover and protection on pollinator richness.png", width=8, height=6, dpi=300)
+write.csv(final_summary_clean, ...)
+write.csv(pa_richness, ...)
+write.csv(forest_pa_richness, ...)
+write.csv(unique_PA_taxa, ...)
+write.csv(final_summary_clean)
+write.csv(pa_richness)
+write.csv(forest_pa_richness)
+write.csv(unique_PA_taxa)
+save.image("pollinator_project_final.RData")
+savehistory("pollinator_project_final.Rhistory")
+savehistory("pollinator_project_final.txt")
