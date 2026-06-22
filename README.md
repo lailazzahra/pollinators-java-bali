@@ -4,11 +4,11 @@
 This study analyzed forest habitat loss and protected area effectiveness for pollinators, to answer whether pollinator occurences are associated with forest areas, whether remaining forests support higher pollinator richness compared to forest-loss areas, and whether protected areas support higher pollinator richness compared to surrounding areas.
 
 ## Data Sources
-- Hymenoptera occurrence records obtained from Global Biodiversity Information Facility (GBIF)
-- Forest cover (2000), forest loss (2001-2024) were obtained from Global Forest Watch (GFW)
-- Protected areas were obtained from World Database on Protected Areas (WDPA)
+1. Hymenoptera occurrence records obtained from Global Biodiversity Information Facility (GBIF)
+2. Forest cover (2000), forest loss (2001-2024) were obtained from Global Forest Watch (GFW)
+3. Protected areas were obtained from World Database on Protected Areas (WDPA)
 
-## Methods Workflow
+## Methods
 1. Data acquisition from GBIF
 2. Taxonomic cleaning and quality filtering
 3. Spatial preprocessing
@@ -42,6 +42,12 @@ This study analyzed forest habitat loss and protected area effectiveness for pol
 - GBIF biodiversity data
 - WDPA protected areas database
 - Google Earth Engine
+
+## Repositories included
+1. R files (RData)
+2. Final report (pdf)
+3. Forest loss cover, pollinator distribution in forest vs non forest area, remaining forest vs forest-loss area, protected areas vs outside protected areas (png)
+4. Pollinator richness in protected areas, unique pollinator taxa in protected areas (csv)
 
 ## Status
 Independent study
